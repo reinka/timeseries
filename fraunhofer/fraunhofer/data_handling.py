@@ -40,11 +40,21 @@ def create_windows(df, n_windows, exclude=[], exclude_original_timeseries=False,
     tmp = df.copy()
     for i in range(1, n_windows + 1):
         shifted = df.copy().shift(i)
-        shifted.columns = shifted.columns + '_%s' % i
+
+        # Rename columns
+        try:
+            shifted.columns = shifted.columns + '_t-%s' % i
+        except AttributeError:  # dealing with a series
+            shifted.name = shifted.name + '_t-%s' + i
+
         tmp = pd.concat([shifted, tmp], axis=1)
 
     if exclude_original_timeseries:
-        tmp = tmp.drop(df.columns, axis=1)
+        try:
+            tmp = tmp.drop(df.columns, axis=1)
+        except AttributeError:  # dealing with a series
+            tmp = tmp.drop(df.name, axis=1)
+
     try:
         if predictor.any():
             tmp[predictor.name] = predictor
