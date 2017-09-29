@@ -100,11 +100,11 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
     title += 'test set' if not train else 'train set'
     fig = plt.figure(figsize=(13, 4))
     if not train:
-        plt.plot(date_index, obs, '+-', label='observed')
-        plt.plot(date_index, preds, '+-', label="predicted")
+        plt.plot(date_index, obs, '+-', label='observed', color='blue')
     else:
         plt.plot(date_index, obs, '+-', label='observed', color='black')
-        plt.plot(date_index, preds, '+-', color='red', label="predicted")
+
+    plt.plot(date_index, preds, '+-', color='red', label="predicted")
     plt.title(title)
     plt.legend()
     plt.show()
@@ -113,15 +113,14 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
         fig, ax = plt.subplots(1, figsize=(13, 4))
         date = date_index[index: index + seq_len]
         if not train:
-            ax.plot(date, obs[index: index + seq_len],
-                    '+-', label='observed')
-            ax.plot(date, preds[index: index + seq_len],
-                    '+-', label="predicted")
+            ax.plot(date, obs[index: index + seq_len], '+-',
+                    label='observed', color='blue')
         else:
             ax.plot(date, obs[index: index + seq_len], '+-',
                     label='observed', color='black')
-            ax.plot(date, preds[index: index + seq_len], '+-',
-                    color='red', label="predicted")
+
+        ax.plot(date, preds[index: index + seq_len], '+-',
+                color='red', label="predicted")
 
         if preds_lag:
             lagged_index = index + preds_lag
