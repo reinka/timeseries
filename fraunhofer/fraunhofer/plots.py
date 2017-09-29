@@ -38,13 +38,23 @@ def plot_corrmat(df, figsize=(10, 10), print_max=True):
 def plot_raw_random_samples(df, n=5, seq_len = 200, start = 0, end=None):
     """Plot random samples of raw dataframe.
 
-    :param df:      pandas.dataframe
-    :param n:       int, number of plots
-    :param seq_len: int, number of data points each plot should contain
-    :param start:   int, lowest index of the df to start plotting from
-    :param end:     int, highest index of the df to plot up to
-    :return:        returns n number of plots. If df contains several columns
-                    each column will be plotted separately.
+    If ``df`` contains several columns each column will be plotted separately.
+
+    Parameters
+    ----------
+    df : pandas.dataframe
+
+    n : int
+        number of plots
+
+    seq_len : int
+        number of data points each plot should contain
+
+    start : int
+        lowest index of the df to start plotting from
+
+    end : int
+        highest index of the df to plot up to
     """
     if not end:
         end = df.shape[0] - seq_len
@@ -61,10 +71,15 @@ def plot_raw_random_samples(df, n=5, seq_len = 200, start = 0, end=None):
 def plot_against_each_other(df, col1, col2):
     """Plot two features of a multiple time series against each other.
 
-    :param df:      pandas.dataframe, dataframe consisting of multiple
-                    timeseries with its index being the time variable
-    :param col1:    str, name of the first column
-    :param col2:    str, name of the second column
+    df : pandas.dataframe
+        dataframe consisting of multiple timeseries with its index
+        being the time variable
+
+    col1 : str
+        name of the first column
+
+    col2 : str
+        name of the second column
     """
     fig, ax1 = plt.subplots(figsize=(12, 5))
 
@@ -153,11 +168,21 @@ def plot_crosscorr(df, relevant_cols, n_shift=150, figsize=(13,2),
                    autocorr=False):
     """Plot cross correlation for the relevant cols of a multi time series.
 
-    :param df:              pandas.dataframe consisting of multiple time series
-    :param relevant_cols:   list of str, name of relevant columns
-    :param n_shift:         int, max shift
-    :param figsize:         tuple of int, matplotlib figsize option
-    :param autocorr:        bool, if False autocorrelation will be excluded
+    df : pandas.dataframe
+        data set consisting of multiple time series
+
+    relevant_cols : list of str
+        name of relevant columns
+
+    n_shift : int
+        max shift / lag value. Cross-correlation will be computed over the range
+        [-n_shift, n_shift]
+
+    figsize : tuple of int
+        matplotlib figsize option
+
+    autocorr : bool
+        if False autocorrelation will be excluded
     """
     # build cartesian product of relevant columns
     for col1, col2 in ((x, y) for x in relevant_cols for y in relevant_cols):
