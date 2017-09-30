@@ -109,6 +109,12 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
     plt.legend()
     plt.show()
 
+    try:
+        assert(end - seq_len > 0)
+    except AssertionError:
+        print('Value Error: end - seq_len leads to ', end-seq_len)
+        return
+
     for index in np.random.randint(start, end - seq_len, n):
         fig, ax = plt.subplots(1, figsize=(13, 4))
         date = date_index[index: index + seq_len]
