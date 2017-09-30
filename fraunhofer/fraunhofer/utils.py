@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def crosscorr(datax, datay, lag=0, n=None):
+def crosscorr(datax, datay, lag=0, window=None):
     """Compute lag-n cross correlation.
 
     Taken from: https://stackoverflow.com/questions/33171413/
@@ -18,8 +18,9 @@ def crosscorr(datax, datay, lag=0, n=None):
     lag : int, optional, default 0.
 
     window :  int, optional, default None.
-        For a given window size n, crosscorr of datax and datay will be
-        calculated with datay always being shifted by 1 until n is reached.
+        For a given window size n, the cross-correlation of datax and datay
+        will be calculated over the range [-n, n] with datay always being
+        shifted by 1, starting with lag -n until n is reached.
 
     Returns
     -------
@@ -27,9 +28,9 @@ def crosscorr(datax, datay, lag=0, n=None):
         the cross correlation of both series If ``window`` is set, a list of
         floats with corresponding cross correlation is returned.
     """
-    if n:
-        window = range(-n, n)
-        result = [crosscorr(datax, datay, lag=i) for i in window]
-        return [window, result], -n + np.argmax(np.abs(result))
+    if window:
+        win = range(-window, window)
+        result = [crosscorr(datax, datay, lag=i) for i in win]
+        return [win, result], -window + np.argmax(np.abs(result))
 
     return datax.corr(datay.shift(lag))
