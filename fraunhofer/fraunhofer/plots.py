@@ -84,12 +84,12 @@ def plot_against_each_other(df, col1, col2):
     fig, ax1 = plt.subplots(figsize=(12, 5))
 
     ax2 = ax1.twinx()
-    ax1.plot(df.index, df[col1], 'g-')
-    ax2.plot(df.index, df[col2], 'b-')
+    ax1.plot(df.index, df[col1], 'r-')
+    ax2.plot(df.index, df[col2], 'k-')
 
     ax1.set_xlabel('Date')
-    ax1.set_ylabel(col1, color='g')
-    ax2.set_ylabel(col2, color='b')
+    ax1.set_ylabel(col1, color='r')
+    ax2.set_ylabel(col2, color='k')
 
     plt.show()
 
