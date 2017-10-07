@@ -10,9 +10,11 @@ def replace_every_last_nth(curr_frame, replace, max_steps, n):
     """Replace every last nth value of the current frame.
 
     For a given ``max_steps``, ``curr_frame`` is being traversed backwards
-    during which each ``n``th value gets replaced by a value of ``replace``.
+    during which for each step the (step * n)-th value of ``curr_frame`` gets
+    replaced by the (step * n)-th value of ``replace``.
 
-    ``replace`` will be also traversed backwards.
+    Because of the backwards traversal an offset relative to the end of
+    ``curr_frame`` and ``replace`` is being used.
 
     I.e.
     curr_frame = [1, 2, 3, 4, 5]
@@ -37,7 +39,6 @@ def replace_every_last_nth(curr_frame, replace, max_steps, n):
 
     Returns
     -------
-
     curr_frame : np.array
         Current frame with replaced values
 
@@ -46,8 +47,9 @@ def replace_every_last_nth(curr_frame, replace, max_steps, n):
     """
     replaced = []
     for i in range(1, max_steps + 1):
-        replaced.append(curr_frame[i * (-n)])
-        curr_frame[i * (-n)] = replace[-i]
+        last_nth = -i * n
+        replaced.append(curr_frame[last_nth])
+        curr_frame[last_nth] = replace[-i]
     return curr_frame, replaced
 
 
@@ -98,13 +100,12 @@ def predict_sequence_full(model, data, n_cols, window_size, keras=True):
         if (i + 1) == len(data):
             break
 
-        # update current frame to next one in the sequence
+        # update current frame: replace by next one in the sequence
         curr_frame = data[i + 1, :]
 
         # replace values in time series with predicted one
-        curr_frame, replaced[i] = replace_every_last_nth(curr_frame, predicted,
-                                                         max_steps=min(
-                                                             window_size,
-                                                             len(predicted)),
-                                                         n=n_cols)
+        curr_frame, replaced[i] = replace_every_last_nth(
+            curr_frame, predicted, max_steps=min(window_size, len(predicted)),
+            n=n_cols)
+
     return predicted, curr_frame, replaced

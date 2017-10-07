@@ -2,7 +2,7 @@
 from sklearn.preprocessing import StandardScaler
 
 
-def load_data(filename, sep=',', timeformat='%Y-%m-%d %H:%M:%S',
+def load_csv(filename, sep=',', timeformat='%Y-%m-%d %H:%M:%S',
               timecol='Zeit', droptime=True, resample_window=None,
               resample_func='mean',
               select_dtypes=None, verbose=False
@@ -45,7 +45,7 @@ def create_windows(df, n_windows, exclude=[], exclude_original_timeseries=False,
         try:
             shifted.columns = shifted.columns + '_t-%s' % i
         except AttributeError:  # dealing with a series
-            shifted.name = shifted.name + '_t-%s' + i
+            shifted.name = shifted.name + '_t-%s' % i
 
         tmp = pd.concat([shifted, tmp], axis=1)
 

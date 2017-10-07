@@ -34,3 +34,19 @@ def crosscorr(datax, datay, lag=0, window=None):
         return [win, result], -window + np.argmax(np.abs(result))
 
     return datax.corr(datay.shift(lag))
+
+
+def percent_change(df, lag=1):
+    """Compute the percent change from one time stamp to another.
+
+    Parameters
+    ----------
+    df : pandas.Series or pandas.Dataframe
+    lag : int
+
+    Returns
+    -------
+    percent_change : pd.Series or pd.Dataframe
+        The percent change between time stamp t and t - lag.
+    """
+    return df / (df.shift(lag)) - 1

@@ -105,7 +105,7 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
         plt.plot(date_index, obs, '+-', label='observed', color='black')
 
     plt.plot(date_index, preds, '+-', color='red', label="predicted")
-    plt.title(title)
+    plt.title(title, fontsize=20)
     plt.legend()
     plt.show()
 
@@ -137,9 +137,11 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
             ax.plot(date, obs[lagged_index:lagged_index + seq_len],
                     '+-', color='.9', label="observed + shift right by 1")
 
-        plt.xlabel('Month-Day Hour (of day)')
+        plt.xlabel('Time', fontsize=18)
         plt.title(
-            'Predictions for the period: {0} to {1}'.format(date[0], date[-1]))
+            'Predictions for the period: {0} to {1}'.format(date[0], date[-1]),
+            fontsize=20
+        )
         plt.legend()
         plt.show()
 
