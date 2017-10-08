@@ -36,17 +36,28 @@ def crosscorr(datax, datay, lag=0, window=None):
     return datax.corr(datay.shift(lag))
 
 
-def percent_change(df, lag=1):
+def percent_change(df, lag=1, rsuffix='_perch'):
     """Compute the percent change from one time stamp to another.
 
     Parameters
     ----------
     df : pandas.Series or pandas.Dataframe
+
     lag : int
+
+    rsuffix : str, optional, default '_perch'
+        Suffix which will be appended to the current feature name.
 
     Returns
     -------
     percent_change : pd.Series or pd.Dataframe
         The percent change between time stamp t and t - lag.
     """
-    return df / (df.shift(lag)) - 1
+    result = df / (df.shift(lag)) - 1
+
+    if df.ndim > 1:
+        result.columns = df.columns.values + rsuffix
+    else:
+        result.name = df.name + rsuffix
+
+    return result
