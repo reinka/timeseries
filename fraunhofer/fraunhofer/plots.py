@@ -32,7 +32,11 @@ def plot_corrmat(df, figsize=(10, 10), print_max=True):
         print(corrmat.max())
 
     f, ax = plt.subplots(figsize=figsize)
-    sns.heatmap(corrmat, vmax=1, square=True)
+    colormap = plt.cm.inferno
+    plt.title('Pearson correlation of continuous features', y=1.05, size=15)
+    sns.heatmap(corrmat, linewidths=0.1, vmax=1.0, square=True, cmap=colormap,
+                linecolor='white', annot=True)
+
     plt.show()
 
 def plot_raw_random_samples(df, n=5, seq_len = 200, start = 0, end=None):
