@@ -1,3 +1,4 @@
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
