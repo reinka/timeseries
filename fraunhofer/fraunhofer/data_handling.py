@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+﻿# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import numpy as np
 import pandas as pd
 
@@ -31,6 +30,39 @@ def load_csv(filename, sep=',', timeformat='%Y-%m-%d %H:%M:%S',
         df = df.select_dtypes(select_dtypes)
     if verbose:
         df.info()
+
+    return df
+
+
+def add_gradient(df, cols=None, rsuffix='_grad'):
+    """Add gradients of features to a given DataFrame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame for whose features the gradient should be computed
+
+    cols : str or list of str, optional
+        Subset of features for which the gradient should be computed.
+
+    rsuffix : str, optional, default ``_grad``
+        Suffix that should be appended to the the name of the feature for which
+        the gradient is being computed.
+
+    Returns
+    -------
+    gradient : pd.DataFrame
+        New DataFrame which contains both old features and newly computed
+        gradient features.
+    """
+    df = df.copy()
+    relevant_cols = cols
+    # TODO Series handling e.g. df.ndim > 1
+    if not relevant_cols:
+        relevant_cols = df.columns
+
+    for col in relevant_cols:
+        df[col + rsuffix] = np.gradient(df[col])
 
     return df
 
