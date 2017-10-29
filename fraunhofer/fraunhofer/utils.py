@@ -61,3 +61,34 @@ def percent_change(df, lag=1, rsuffix='_perch'):
         result.name = df.name + rsuffix
 
     return result
+
+def compute_fft(ts, sampling_rate=1):
+    """Compute Fast Fourier Transform for given time series.
+
+    Parameters
+    ----------
+    ts : pandas.Series
+        Time series for which to compute the FFT.
+
+    sampling_rate : float, default 1
+        Number of samples per second. It is the reciprocal of
+        the sampling time, i.e. 1/T, also called the sampling frequency.
+
+    Returns
+    -------
+    yf : np.array
+        FFT result computed via numpy.fft
+
+    freq : np.array
+        Corresponding Discrete Fourier Transform sample frequencies
+    """
+    N = ts.size
+
+    # sampling time / sample space
+    T = 1.0 / sampling_rate
+
+    yf = np.abs(np.fft.fft(ts))
+    freq = np.fft.fftfreq(N, T)
+    nyquist_freq = 0.5 * sampling_rate
+
+    return yf, freq, nyquist_freq
