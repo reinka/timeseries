@@ -1,12 +1,18 @@
-﻿import pandas as pd
+﻿# -*- coding: utf-8 -*-
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+import numpy as np
+import pandas as pd
+
 from sklearn.preprocessing import StandardScaler
+
+from IPython.core.debugger import set_trace
 
 
 def load_csv(filename, sep=',', timeformat='%Y-%m-%d %H:%M:%S',
-              timecol='Zeit', droptime=True, resample_window=None,
-              resample_func='mean',
-              select_dtypes=None, verbose=False
-              ):
+             timecol='Zeit', droptime=True, resample_window=None,
+             resample_func='mean',
+             select_dtypes=None, verbose=False
+             ):
     df = pd.read_csv(filename, sep=sep)
 
     # convert index to datetime
@@ -29,7 +35,8 @@ def load_csv(filename, sep=',', timeformat='%Y-%m-%d %H:%M:%S',
     return df
 
 
-def create_windows(df, n_windows, exclude=[], exclude_original_timeseries=False,
+def create_windows(df, n_windows, exclude=[],
+                   exclude_original_timeseries=False,
                    drop_na=True, predictor=None):
     """Create new DF, where each row contains current values of the timestamp
     + values from the previous ``n_windows`` timestamps.
@@ -162,3 +169,39 @@ def train_test_split(df, predictor_colname, exclude_cols=None, scale=True,
         return result, trainset, testset, valset
 
     return result
+
+
+def add_volatility(data, window, rsuffix='_volat'):
+    """Compute the volatility for given data and window.
+
+    For a given ``window``, its volatility will be computed by computing the
+    standard deviation over that window.
+
+    Parameters
+    ----------
+    data : pd.Series or pd.DataFrame
+
+    window : int
+        backwards range on which to compute the volatility
+
+    rsuffix : str, optional, default ``_volat``
+        Suffix that should be appended to the the name of the feature for which
+        the gradient is being computed.
+
+    Returns
+    -------
+    volatility : pd.Dataframe
+        DataFrame that contains both the old series / dataframe and the newly
+        computed volatility features
+    """
+    data = data.copy()
+    rsuffix += str(window)
+    if data.ndim == 1:
+        volat = data.rolling(window).std()
+        volat.name = data.name + rsuffix
+        return pd.concat([data, volat], axis=1)
+
+    for col in data.columns:
+        data[col + rsuffix] = data.rolling(window).std()
+
+    return data
