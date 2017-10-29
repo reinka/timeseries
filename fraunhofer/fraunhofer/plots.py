@@ -1,9 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
 
-from .utils import crosscorr
+from .utils import compute_fft, crosscorr
 
 plt.style.use('default')
 
@@ -39,7 +39,8 @@ def plot_corrmat(df, figsize=(10, 10), print_max=True):
 
     plt.show()
 
-def plot_raw_random_samples(df, n=5, seq_len = 200, start = 0, end=None):
+
+def plot_raw_random_samples(df, n=5, seq_len=200, start=0, end=None):
     """Plot random samples of raw dataframe.
 
     If ``df`` contains several columns each column will be plotted separately.
@@ -72,7 +73,7 @@ def plot_raw_random_samples(df, n=5, seq_len = 200, start = 0, end=None):
             plt.show()
 
 
-def plot_against_each_other(df, col1, col2):
+def plot_against_each_other(df, col1, col2, title, alpha=.3):
     """Plot two features of a multiple time series against each other.
 
     df : pandas.dataframe
@@ -88,14 +89,13 @@ def plot_against_each_other(df, col1, col2):
     fig, ax1 = plt.subplots(figsize=(12, 5))
 
     ax2 = ax1.twinx()
-    ax1.plot(df.index, df[col1], 'r-')
-    ax2.plot(df.index, df[col2], 'k-')
+    ax1.plot(df.index, df[col1], 'k-')
+    ax2.plot(df.index, df[col2], 'r-', alpha=alpha)
 
     ax1.set_xlabel('Date')
-    ax1.set_ylabel(col1, color='r')
-    ax2.set_ylabel(col2, color='k')
-
-    plt.show()
+    ax1.set_ylabel(col1, color='k')
+    ax2.set_ylabel(col2, color='r', alpha=alpha)
+    plt.title(title)
 
 
 def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
@@ -114,9 +114,9 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
     plt.show()
 
     try:
-        assert(end - seq_len > 0)
+        assert (end - seq_len > 0)
     except AssertionError:
-        print('Value Error: end - seq_len leads to ', end-seq_len)
+        print('Value Error: end - seq_len leads to ', end - seq_len)
         return
 
     for index in np.random.randint(start, end - seq_len, n):
@@ -153,19 +153,18 @@ def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
 def shift_correlate_and_plot(df, predictor, covariate, n=500, plot=True):
     past = []
     for i in range(1, n + 1):
-        past.append(
-            pd.concat([df[covariate].shift(i), df[predictor]], axis=1)[
-            n:].corr()[predictor][0]
-        )
+        past.append(pd.concat(
+            [df[covariate].shift(i), df[predictor]],
+            axis=1)[n:].corr()[predictor][0])
     # use future prod_total values
     future = []
     for i in range(1, n + 1):
         future.append(
-            pd.concat([df[covariate].shift(-i), df[predictor]], axis=1)[
-            n:].corr()[predictor][0]
-        )
+            pd.concat(
+                [df[covariate].shift(-i), df[predictor]],
+                axis=1)[n:].corr()[predictor][0])
     if plot:
-        fig = plt.figure(figsize=(13, 4))
+        plt.figure(figsize=(13, 4))
         plt.plot(past, label='past')
         plt.plot(future, label='future')
         plt.xlabel('Timesteps into the past / future')
@@ -175,7 +174,8 @@ def shift_correlate_and_plot(df, predictor, covariate, n=500, plot=True):
         plt.show()
     return past, future
 
-def plot_crosscorr(df, relevant_cols, n_shift=150, figsize=(13,2),
+
+def plot_crosscorr(df, relevant_cols, n_shift=150, figsize=(13, 2),
                    autocorr=False):
     """Plot cross correlation for the relevant cols of a multi time series.
 
@@ -186,8 +186,8 @@ def plot_crosscorr(df, relevant_cols, n_shift=150, figsize=(13,2),
         name of relevant columns
 
     n_shift : int
-        max shift / lag value. Cross-correlation will be computed over the range
-        [-n_shift, n_shift]
+        max shift / lag value. Cross-correlation will be computed over the
+        range [-n_shift, n_shift]
 
     figsize : tuple of int
         matplotlib figsize option
@@ -199,10 +199,60 @@ def plot_crosscorr(df, relevant_cols, n_shift=150, figsize=(13,2),
     for col1, col2 in ((x, y) for x in relevant_cols for y in relevant_cols):
         if col1 == col2 and not autocorr:
             continue
-        fig = plt.figure(figsize=figsize)
+        plt.figure(figsize=figsize)
         xcorr, index = crosscorr(df[col1], df[col2], n=n_shift)
         print('Lag with highest cross correlation is', index)
         plt.plot(xcorr[0], xcorr[1])
         plt.axvline(x=index, color='red')
-        plt.title('Cross-correlation of %s and %s'%(col1, col2))
+        plt.title('Cross-correlation of %s and %s' % (col1, col2))
         plt.show()
+
+
+def plot_fft(ts, sampling_rate=1, period=True, start=0, end=-1,
+             figsize=(15, 7)):
+    """Plot Fast Fourier Transform for given time series.
+
+    http://www.cbcity.de/die-fft-mit-python-einfach-erklaert
+
+    Parameters
+    ----------
+    ts : pandas.Series
+        Time series with its index being the datetime time stamps.
+
+    sampling_rate : float, default 1
+        Number of samples per second. It is the reciprocal of
+        the sampling time, i.e. 1/T, also called the sampling frequency.
+
+    period : boolean, default True
+        Indicating if frequency should be converted to hourly period.
+
+    start : int
+        Starting index for plotting.
+
+    end : int
+        Ending index for plotting.
+    """
+    N = ts.size
+    yf, freq, nyquist_freq = compute_fft(ts, sampling_rate)
+
+    plt.figure(figsize=figsize)
+    plt.plot(freq[start:end], 2.0 / N * yf[start:end])
+    plt.axvline(nyquist_freq, color='red', label='Nyquist frequency')
+    plt.grid()
+    plt.title("Fast Fourier Transform for {0}\nDate range: {1} -- {2}".format(
+        ts.name, ts.index[0], ts.index[-1]))
+    plt.xlabel('Frequency ($Hz$)')
+    plt.legend()
+    plt.show()
+
+    # convert freq to period
+    if period:
+        period = 1.0 / freq  # in seconds
+        periodh = period / (60.0 * 60.0)  # in hours
+
+        plt.figure(figsize=(15, 6))
+        plt.plot(periodh[start:end], 2.0 / N * yf[start:end])
+        # plt.xticks([12, 24, 72, 144])
+        # plt.xlim(0, 180)
+        # plt.ylim(0, 50)
+        plt.xlabel('Period ($h$)')
