@@ -5,7 +5,7 @@ setup(
 	description='Custom scripts for time series analysis',
 	author='Andrei Poehlmann',
 	author_email='andrei.poehlmann90@gmail.com',
-	license='MIT',
+	license='AGPL-3.0',
 	packages=['fraunhofer'],
 	zip_safe=False,
 )
