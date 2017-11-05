@@ -122,3 +122,61 @@ def predict_multi_step(model, data, window_size, n_ts=1, keras=True):
         replaced_frames.append(curr_frame)
 
     return predicted, curr_frame, replaced, replaced_frames
+
+
+def forecast_multi_step(model, data, forecast_len, keras=1):
+    """Multi step ahead forecasting.
+
+    This is a simpler version of the ``predict_multi_step`` function for the
+    case of doing multi step ahead forecasting on a one 1-dim time series.
+    After each prediction, shift the time series by 1 time stamp and append
+    the newly predicted value to its end. Use this newly created time series
+    for the next prediction. Repeat this process ``forecast_len`` times.
+
+    Parameters
+    ----------
+    model : object
+        Keras or scikit learn model object
+
+    data : np.array
+        1 dimensional time series data
+
+    forecast_len : int
+        length of the forecast
+
+    keras : int, default 1
+        if 1, Keras is being used, so we need adjust the dimension of the
+        time series data accordingly.
+
+    Returns
+    -------
+    result : dict
+        dictionary containing the predictions of size ``forecast_len``,
+        the last used frame ``curr_frame`` and all ``replaced_frames`` to allow
+        sanity checking.
+
+    """
+    curr_frame = data
+    predicted = []
+    # sanity check
+    replaced_frames = []
+    for i in range(forecast_len):
+        replaced_frames.append(curr_frame)
+
+        if keras:
+            p = model.predict(curr_frame[np.newaxis, :])[0]
+        else:
+            p = model.predict(curr_frame)
+
+        predicted.append(p)
+
+        # shift current frame by 1 time stamp and append
+        # newly predicted value to the end of the array
+        curr_frame = np.append(curr_frame[1:], p)
+
+    result = {
+        'predictions': predicted,
+        'last_frame': curr_frame,
+        'replaced_frames': replaced_frames
+    }
+    return result
