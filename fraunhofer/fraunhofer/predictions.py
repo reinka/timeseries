@@ -1,15 +1,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import numpy as np
 
-# from IPython.core.debugger import set_trace
 
-
-def replace_every_last_nth(curr_frame, replace, max_steps, n):
+def replace_every_last_nth(curr_frame, replace, max_steps, n_ts):
     """Replace every last nth value of the current frame.
 
-    For a given ``max_steps``, ``curr_frame`` is being traversed backwards
-    during which for each step the (step * n)-th value of ``curr_frame`` gets
-    replaced by the (step * n)-th value of ``replace``.
+    For a given number ``max_steps``, ``curr_frame`` and ``replace`` are being
+    traversed backwards during which for each step i the (i * n_ts)-th
+    value of ``curr_frame`` gets replaced by the i-th value of ``replace``.
 
     Because of the backwards traversal an offset relative to the end of
     ``curr_frame`` and ``replace`` is being used.
@@ -32,8 +30,8 @@ def replace_every_last_nth(curr_frame, replace, max_steps, n):
     max_steps : int
         Maximum number of steps to traverse backwards
 
-    n: int
-        Number of values to replace
+    n_ts: int
+        Number of non-lagged, unique time series in the data.
 
     Returns
     -------
@@ -45,14 +43,17 @@ def replace_every_last_nth(curr_frame, replace, max_steps, n):
     """
     replaced = []
     for i in range(1, max_steps + 1):
-        last_nth = -i * n
+        # compute n-th value to be replaced
+        last_nth = -i * n_ts
+        # for sanity check
         replaced.append(curr_frame[last_nth])
+        # finally replace actual value
         curr_frame[last_nth] = replace[-i]
     return curr_frame, replaced
 
 
-def predict_sequence_full(model, data, n_cols, window_size, keras=True):
-    """Predict on a full sequence of predicted values.
+def predict_multi_step(model, data, window_size, n_ts=1, keras=True):
+    """Predict multiple steps ahead.
 
     Replace true values by predicted values, before doing the next prediction.
     At some point, new predictions will be based on past predicted values only.
@@ -66,8 +67,19 @@ def predict_sequence_full(model, data, n_cols, window_size, keras=True):
     data : np.array
         data set on which to predict
 
-    n_cols : int
-        number of columns the data set contains
+    n_ts : int, default 1
+        number of unique, non-lagged time series the data set contains.
+        This is used for backwards traversing and replacing true values:
+        the n-th value to be replaced will becomputed via:
+            n_ts * min(window_size, predicted_values)
+        The min is calculated since in the beginning the number of predicted
+        values will be less then the (lagged) ``window_size``.
+        For a data set consisting only of one time series and its lagged values
+        this variable is 1. In fact this variable is needed when there is more
+        than one time series in the data set + their corresponding lags of size
+        ``window_size``: in this case, we want to replace the values of the
+        predicted time series only, so we need to step over the other time
+        series when doing backward traversing.
 
     window_size : int
         window size of past time stamps the prediction should be based on
@@ -88,7 +100,9 @@ def predict_sequence_full(model, data, n_cols, window_size, keras=True):
     """
     curr_frame = data[0, :]
     predicted = []
+    # for sanity check
     replaced = {}
+    replaced_frames = []
     for i in range(len(data)):
         if keras:
             p = model.predict(curr_frame[np.newaxis, :])[0]
@@ -104,6 +118,7 @@ def predict_sequence_full(model, data, n_cols, window_size, keras=True):
         # replace values in time series with predicted one
         curr_frame, replaced[i] = replace_every_last_nth(
             curr_frame, predicted, max_steps=min(window_size, len(predicted)),
-            n=n_cols)
+            n=n_ts)
+        replaced_frames.append(curr_frame)
 
-    return predicted, curr_frame, replaced
+    return predicted, curr_frame, replaced, replaced_frames
