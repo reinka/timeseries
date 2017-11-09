@@ -67,9 +67,8 @@ def add_gradient(df, cols=None, rsuffix='_grad'):
     return df
 
 
-def add_lag(df, lag, exclude=[],
-                   exclude_original_timeseries=False,
-                   drop_na=True, predictor=None):
+def add_lag(df, lag, exclude=[], exclude_original_timeseries=False,
+            drop_na=True, predictor=None):
     """Append previous ``lag`` timestamps to each ``df`` row.
 
     Creates a new DF, where each row contains the values of the current
