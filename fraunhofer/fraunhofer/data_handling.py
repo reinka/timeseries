@@ -77,8 +77,17 @@ def create_windows(df, lag, exclude=[],
 
     Examples
     --------
-    >>> test = pd.DataFrame(np.arange(5), columns=['t'])
-    >>> create_windows(test, 5)
+    1-dim case, pandas.Series
+    >>> df1 = pd.Series(np.arange(10), name='t')
+    >>> create_windows(df1, 5)
+
+    1-dim case, pandas.DataFrame
+    >>> df2 = pd.DataFrame(np.arange(10), columns=['t'])
+    >>> create_windows(df2, 5)
+
+    Multi-dim case, pandas.DataFrame
+    >>> df3 = pd.DataFrame(np.arange(20).reshape(10,2), columns=['A', 'B'])
+    >>> create_windows(df3, 5)
 
     Parameters
     ----------
