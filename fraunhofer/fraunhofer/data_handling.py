@@ -67,17 +67,54 @@ def add_gradient(df, cols=None, rsuffix='_grad'):
     return df
 
 
-def create_windows(df, n_windows, exclude=[],
+def create_windows(df, lag, exclude=[],
                    exclude_original_timeseries=False,
                    drop_na=True, predictor=None):
-    """Create new DF, where each row contains current values of the timestamp
-    + values from the previous ``n_windows`` timestamps.
+    """Append previous ``lag`` timestamps to each ``df`` row.
+
+    Creates a new DF, where each row contains the values of the current
+    timestamp + values from the previous ``lag`` timestamps.
+
+    Examples
+    --------
+    >>> test = pd.DataFrame(np.arange(5), columns=['t'])
+    >>> create_windows(test, 5)
+
+    Parameters
+    ----------
+    df : pandas.DataFrame or pandas.Series
+
+    lag : int
+        Number of lags / range to look back.
+
+    exclude : list of str, optional
+        List of column names that can be provided if some columns should be
+        excluded.
+
+    exclude_original_timeseries : bool, optional
+        Set to true if the original time series should be removed, so that only
+        past ``lag`` values will be contained in each row.
+
+    drop_na : bool, optional
+        Shifting the time series will lead to NAs for the first ``lag`` rows
+        (since previous values are not available for those data points).
+        Set true, if those rows should be excluded.
+
+    predictor : pandas.Series
+        Predictor, that should be appended to the end of the newly resulting
+        data frame.
+
+    Returns
+    -------
+    DataFrame, where each row has been extended to also contain the previous
+    ``lag`` values. New columns are named by the follwing pattern:
+        column_t-1, column_t-2, ..., column_t-``lag``
     """
     if exclude:
         df = df.drop(exclude, axis=1)
 
     tmp = df.copy()
-    for i in range(1, n_windows + 1):
+    for i in range(1, lag + 1):
         shifted = df.copy().shift(i)
 
         # Rename columns
@@ -100,7 +137,7 @@ def create_windows(df, n_windows, exclude=[],
     except AttributeError:
         pass
 
-    return tmp[n_windows:] if drop_na else tmp
+    return tmp[lag:] if drop_na else tmp
 
 
 def train_test_split(df, predictor_colname, exclude_cols=None, scale=True,
