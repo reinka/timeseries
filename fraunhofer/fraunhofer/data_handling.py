@@ -79,15 +79,47 @@ def create_windows(df, lag, exclude=[],
     --------
     1-dim case, pandas.Series
     >>> df1 = pd.Series(np.arange(10), name='t')
-    >>> create_windows(df1, 5)
+    >>> create_windows(df1, 5, drop_na=False)
+    	t_t-5	t_t-4	t_t-3	t_t-2	t_t-1	t
+    0	NaN	NaN	NaN	NaN	NaN	0
+    1	NaN	NaN	NaN	NaN	0.0	1
+    2	NaN	NaN	NaN	0.0	1.0	2
+    3	NaN	NaN	0.0	1.0	2.0	3
+    4	NaN	0.0	1.0	2.0	3.0	4
+    5	0.0	1.0	2.0	3.0	4.0	5
+    6	1.0	2.0	3.0	4.0	5.0	6
+    7	2.0	3.0	4.0	5.0	6.0	7
+    8	3.0	4.0	5.0	6.0	7.0	8
+    9	4.0	5.0	6.0	7.0	8.0	9
 
     1-dim case, pandas.DataFrame
     >>> df2 = pd.DataFrame(np.arange(10), columns=['t'])
     >>> create_windows(df2, 5)
+    	t_t-5	t_t-4	t_t-3	t_t-2	t_t-1	t
+    5	0.0	1.0	2.0	3.0	4.0	5
+    6	1.0	2.0	3.0	4.0	5.0	6
+    7	2.0	3.0	4.0	5.0	6.0	7
+    8	3.0	4.0	5.0	6.0	7.0	8
+    9	4.0	5.0	6.0	7.0	8.0	9
 
     Multi-dim case, pandas.DataFrame
     >>> df3 = pd.DataFrame(np.arange(20).reshape(10,2), columns=['A', 'B'])
     >>> create_windows(df3, 5)
+    	A_t-5	B_t-5	A_t-4	B_t-4	A_t-3	B_t-3	A_t-2	B_t-2	A_t-1	B_t-1	A	B
+    5	0.0	1.0	2.0	3.0	4.0	5.0	6.0	7.0	8.0	9.0	10	11
+    6	2.0	3.0	4.0	5.0	6.0	7.0	8.0	9.0	10.0	11.0	12	13
+    7	4.0	5.0	6.0	7.0	8.0	9.0	10.0	11.0	12.0	13.0	14	15
+    8	6.0	7.0	8.0	9.0	10.0	11.0	12.0	13.0	14.0	15.0	16	17
+    9	8.0	9.0	10.0	11.0	12.0	13.0	14.0	15.0	16.0	17.0	18	19
+
+    Extra parameters
+    >>> create_windows(df3, 5, exclude=['B'], exclude_original_timeseries=True)
+    	A_t-5	A_t-4	A_t-3	A_t-2	A_t-1
+    5	0.0	2.0	4.0	6.0	8.0
+    6	2.0	4.0	6.0	8.0	10.0
+    7	4.0	6.0	8.0	10.0	12.0
+    8	6.0	8.0	10.0	12.0	14.0
+    9	8.0	10.0	12.0	14.0	16.0
 
     Parameters
     ----------
