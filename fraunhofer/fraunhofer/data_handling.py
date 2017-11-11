@@ -166,7 +166,7 @@ def add_lag(df, lag, exclude=[], exclude_original_timeseries=False,
         tmp = pd.concat([shifted, tmp], axis=1)
 
     if exclude_original_timeseries:
-        if tmp.ndim > 1:
+        if df.ndim > 1:
             tmp = tmp.drop(df.columns, axis=1)
         else:  # dealing with a series
             tmp = tmp.drop(df.name, axis=1)
