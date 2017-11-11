@@ -158,17 +158,17 @@ def add_lag(df, lag, exclude=[], exclude_original_timeseries=False,
         shifted = df.copy().shift(i)
 
         # Rename columns
-        try:
+        if shifted.ndim > 1:
             shifted.columns = shifted.columns + '_t-%s' % i
-        except AttributeError:  # dealing with a series
+        else:  # dealing with a series
             shifted.name = shifted.name + '_t-%s' % i
 
         tmp = pd.concat([shifted, tmp], axis=1)
 
     if exclude_original_timeseries:
-        try:
+        if tmp.ndim > 1:
             tmp = tmp.drop(df.columns, axis=1)
-        except AttributeError:  # dealing with a series
+        else:  # dealing with a series
             tmp = tmp.drop(df.name, axis=1)
 
     try:
