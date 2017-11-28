@@ -74,7 +74,7 @@ def plot_raw_random_samples(df, n=5, seq_len=200, start=0, end=None):
             plt.show()
 
 
-def plot_against_each_other(df, col1, col2, title, alpha=.3):
+def plot_against_each_other(df, col1, col2, title, alpha=.3, figsize=(12,3)):
     """Plot two features of a multiple time series against each other.
 
     df : pandas.dataframe
@@ -87,7 +87,7 @@ def plot_against_each_other(df, col1, col2, title, alpha=.3):
     col2 : str
         name of the second column
     """
-    fig, ax1 = plt.subplots(figsize=(12, 5))
+    fig, ax1 = plt.subplots(figsize=figsize)
 
     ax2 = ax1.twinx()
     ax1.plot(df.index, df[col1], 'k-')
@@ -97,6 +97,7 @@ def plot_against_each_other(df, col1, col2, title, alpha=.3):
     ax1.set_ylabel(col1, color='k')
     ax2.set_ylabel(col2, color='r', alpha=alpha)
     plt.title(title)
+    plt.show()
 
 
 def plot_random_samples(preds, obs, date_index, n, start, end, seq_len=50,
@@ -257,3 +258,4 @@ def plot_fft(ts, sampling_rate=1, period=True, start=0, end=-1,
         # plt.xlim(0, 180)
         # plt.ylim(0, 50)
         plt.xlabel('Period ($h$)')
+        plt.show()
