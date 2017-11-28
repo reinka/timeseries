@@ -118,7 +118,7 @@ def predict_multi_step(model, data, window_size, n_ts=1, keras=True):
         # replace values in time series with predicted one
         curr_frame, replaced[i] = replace_every_last_nth(
             curr_frame, predicted, max_steps=min(window_size, len(predicted)),
-            n=n_ts)
+            n_ts=n_ts)
         replaced_frames.append(curr_frame)
 
     return predicted, curr_frame, replaced, replaced_frames
@@ -164,7 +164,9 @@ def forecast_multi_step(model, data, forecast_len, keras=1):
         replaced_frames.append(curr_frame)
 
         if keras:
-            p = model.predict(curr_frame[np.newaxis, :])[0]
+            if curr_frame.ndim == 1:
+                curr_frame = curr_frame[np.newaxis, :]
+            p = model.predict(curr_frame)[0]
         else:
             p = model.predict(curr_frame)
 
@@ -172,7 +174,10 @@ def forecast_multi_step(model, data, forecast_len, keras=1):
 
         # shift current frame by 1 time stamp and append
         # newly predicted value to the end of the array
-        curr_frame = np.append(curr_frame[1:], p)
+        if curr_frame.ndim == 2:  # keras shape
+            curr_frame = np.append(curr_frame[0][1:], p)[np.newaxis, :]
+        else:
+            curr_frame = np.append(curr_frame[1:], p)
 
     result = {
         'predictions': predicted,
