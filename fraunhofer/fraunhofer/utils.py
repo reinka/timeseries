@@ -1,5 +1,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import numpy as np
+import pandas as pd
 
 
 def crosscorr(datax, datay, lag=0, window=None):
@@ -61,6 +62,7 @@ def percent_change(df, lag=1, rsuffix='_perch'):
 
     return result
 
+
 def compute_fft(ts, sampling_rate=1):
     """Compute Fast Fourier Transform for given time series.
 
@@ -91,3 +93,56 @@ def compute_fft(ts, sampling_rate=1):
     nyquist_freq = 0.5 * sampling_rate
 
     return yf, freq, nyquist_freq
+
+
+def create_date_range(pivot, periods, future, freq):
+    """Helper function to create a date range.
+
+    Give a pivot date, construct a pd.Datetime range of length `periods` that
+    starts / ends at the given pivot.
+
+    Parameters
+    ----------
+    pivot : str
+        Datetime format string relative to which the date range should be
+        computed
+
+    periods : int
+        Date range expressed in number of periods
+
+    future : bool
+        If True:    computes future dates
+        If False:   compute past dates
+
+    freq : str
+        Frequency string, can have multiples, e.g. '15min'
+
+    Returns
+    -------
+    date_range : DatetimeIndex
+
+    Examples
+    --------
+    >>> create_date_range(pivot='2016-07-11 23:15:00', periods=12,
+                          future=False, freq='5h')
+    DatetimeIndex(['2016-07-09 16:15:00', '2016-07-09 21:15:00',
+               '2016-07-10 02:15:00', '2016-07-10 07:15:00',
+               '2016-07-10 12:15:00', '2016-07-10 17:15:00',
+               '2016-07-10 22:15:00', '2016-07-11 03:15:00',
+               '2016-07-11 08:15:00', '2016-07-11 13:15:00',
+               '2016-07-11 18:15:00', '2016-07-11 23:15:00'],
+              dtype='datetime64[ns]', freq='5H')
+
+    >>> create_date_range(pivot='2016-07-11 23:15:00', periods=5,
+                          future=True,  freq='15min')
+    DatetimeIndex(['2016-07-11 23:15:00', '2016-07-11 23:30:00',
+               '2016-07-11 23:45:00', '2016-07-12 00:00:00',
+               '2016-07-12 00:15:00'],
+              dtype='datetime64[ns]', freq='15T')
+    """
+    if future:
+        return pd.date_range(start=pivot, periods=periods,
+                             freq=freq)
+
+    return pd.date_range(end=pivot, periods=periods,
+                         freq=freq)
