@@ -10,6 +10,25 @@ from .utils import create_date_range
 
 def forecast(models, column, df, forecast_len, window_size,
              start_date=None, freq='15min', plot=1):
+    """Multi-step ahead forecast.
+
+    TODO complete doc-string
+
+    Parameters
+    ----------
+    models
+    column
+    df
+    forecast_len
+    window_size
+    start_date
+    freq
+    plot
+
+    Returns
+    -------
+
+    """
     # get model
     m = models.get(column).get('model')
     # get scalers
@@ -42,7 +61,7 @@ def forecast(models, column, df, forecast_len, window_size,
     f['predictions'] = sy.inverse_transform(f.get('predictions'))
     f['data_date'] = date_range
     f['prediction_date'] = create_date_range(pivot=start_date, freq='15min',
-                                             periods=window_size, future=True)
+                                             periods=forecast_len, future=True)
 
     if plot:
         # rescale forecast and plot
@@ -52,3 +71,7 @@ def forecast(models, column, df, forecast_len, window_size,
         plt.show()
 
     return f
+
+
+def recursive_pred_interval():
+    raise NotImplementedError('Function not implemented yet.')
