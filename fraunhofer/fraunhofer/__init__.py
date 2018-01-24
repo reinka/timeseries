@@ -1,4 +1,4 @@
-from . import data_handling
+from . import data_utils
 from . import metrics
 from . import outliers
 from . import plots
