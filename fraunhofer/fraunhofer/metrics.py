@@ -2,8 +2,6 @@
 import keras.backend as K
 import numpy as np
 
-from IPython.core.debugger import set_trace
-
 
 def rmsle(y_true, y_pred):
     """Compute Root Mean Squared Logarithmic Error.
