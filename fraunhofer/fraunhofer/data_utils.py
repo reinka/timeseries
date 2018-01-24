@@ -2,9 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from sklearn.preprocessing import StandardScaler
-
-from IPython.core.debugger import set_trace
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 
 def load_csv(filename, sep=',', timeformat='%Y-%m-%d %H:%M:%S',
@@ -180,17 +178,20 @@ def add_lag(df, lag, exclude=[], exclude_original_timeseries=False,
     return tmp[lag:] if drop_na else tmp
 
 
-def train_test_split(df, predictor_colname, exclude_cols=None, scale=True,
-                     return_datasets=False,
-                     train_ratio=.7, test_ratio=.5, scale_on_train=True):
+def train_test_split(df, response_col, exclude_cols=None, scale=True,
+                     return_datasets=False, train_ratio=.7, test_ratio=.5,
+                     scale_on_train=True, categorical=False, type=None,
+                     test_date=None):
     """Split Pandas data frame into train test and validation set.
+
+    Index of the data frame is expected to be the time stamps.
 
     Parameters
     ----------
     df : pandas.Dataframe
 
-    predictor_colname : str
-        name of the predictor column
+    response_col : str
+        name of the response column which is to be predicted
 
     exclude_cols : int, optional
         columns to exclude, starting from index 0
@@ -214,6 +215,12 @@ def train_test_split(df, predictor_colname, exclude_cols=None, scale=True,
         if false: scaler will be calibrated on the whole dataset before
         splitting it into train, test and val set
 
+    test_date : tuple of strings
+        tuple that contains the start and end date of the time series which
+        should be used as test set. In this case, train and test set will be
+        computed solely based on this information, so `train_ratio` will be
+        ignored.
+
     Returns
     -------
     trX, trY, teX, teY, valX, valY : np.array
@@ -232,36 +239,50 @@ def train_test_split(df, predictor_colname, exclude_cols=None, scale=True,
 
     N = df.shape[0]
 
-    index = int(train_ratio * N)
+    if test_date:
+        if not isinstance(test_date, tuple):
+            raise TypeError('The provided test date must be '
+                            'a tuple. Found: ' + str(test_date))
 
-    trainset = df[:index]
-    test = df[index:]
+        trainset = df[(df.index < test_date[0]) | (df.index > test_date[1])]
+        test = df[(df.index >= test_date[0]) & (df.index <= test_date[1])]
+    else:
+        index = int(train_ratio * N)
+
+        trainset = df[:index]
+        test = df[index:]
+
     index = int(test_ratio * test.shape[0])
     testset, valset = test[:index], test[index:]
     print(trainset.shape, testset.shape, valset.shape)
 
-    trX = trainset.drop(predictor_colname, axis=1).values
-    trY = trainset[predictor_colname].values.reshape(-1, 1)
+    trX = trainset.drop(response_col, axis=1).values
+    trY = trainset[response_col].values.reshape(-1, 1)
 
-    teX = testset.drop(predictor_colname, axis=1).values
-    teY = testset[predictor_colname].values.reshape(-1, 1)
+    teX = testset.drop(response_col, axis=1).values
+    teY = testset[response_col].values.reshape(-1, 1)
 
-    valX = valset.drop(predictor_colname, axis=1).values
-    valY = valset[predictor_colname].values.reshape(-1, 1)
+    valX = valset.drop(response_col, axis=1).values
+    valY = valset[response_col].values.reshape(-1, 1)
 
     result = trX, trY, teX, teY, valX, valY
 
     # standardize with respect to train set
     if scale:
-        scalerX = StandardScaler()
-        scalerY = StandardScaler()
+        if type and type.lower() == 'minmax':
+            print("minmax")
+            scalerX = MinMaxScaler((-1, 1))
+            scalerY = MinMaxScaler((-1, 1))
+        else:
+            scalerX = StandardScaler()
+            scalerY = StandardScaler()
 
         if scale_on_train:
             scalerX = scalerX.fit(trX)
             scalerY = scalerY.fit(trY)
         else:
-            scalerX = scalerX.fit(df.drop(predictor_colname, axis=1))
-            scalerY = scalerY.fit(df[predictor_colname].values.reshape(-1, 1))
+            scalerX = scalerX.fit(df.drop(response_col, axis=1))
+            scalerY = scalerY.fit(df[response_col].values.reshape(-1, 1))
 
         trX = scalerX.transform(trX)
         trY = scalerY.transform(trY)
